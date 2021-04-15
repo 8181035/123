@@ -1,0 +1,240 @@
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <assert.h>
+
+using namespace std;
+// Component 
+class Unit
+{
+public:
+	int type = 0;
+
+	virtual int getWeight() = 0;
+	virtual void addUnit(Unit* p)
+	{
+		assert(false);
+	}
+	virtual ~Unit() {}
+};
+
+// Primitives
+class Pilot : public Unit
+{
+public:
+	virtual int getWeight()
+	{
+		return 0;
+	}
+};
+
+class Stewardess : public Unit
+{
+public:
+	virtual int getWeight()
+	{
+		return 0;
+	}
+};
+
+class Passenger : public Unit
+{
+public:
+	int type;
+	int weight;
+
+	virtual int getWeight()
+	{
+		int weight = rand() % 55 + 5;
+		return weight;
+	}
+};
+
+
+// Composite
+class CompositeUnit_one : public Unit
+{
+	int type = 1;
+private:
+	std::vector<Passenger*> one;
+public:
+
+	int getWeight() {
+		int total = 0;
+		total += rand() % 55 + 5;
+		return total;
+	}
+	void addUnit(Passenger* p) {
+		p->type = 1;
+		one.push_back(p);
+	}
+	~CompositeUnit_one()
+	{
+		for (int i = 0; i < one.size(); ++i)
+			delete one[i];
+	}
+};
+
+class CompositeUnit_buz : public Unit
+{
+	int type = 2;
+private:
+	std::vector<Passenger*> buz;
+public:
+
+	int getWeight() {
+		int total = 0;
+		total += rand() % 55 + 5;
+		return total;
+	}
+	void addUnit(Passenger* p) {
+		p->type = 2;
+		buz.push_back(p);
+	}
+	~CompositeUnit_buz()
+	{
+		for (int i = 0; i < buz.size(); ++i)
+			delete buz[i];
+	}
+};
+class CompositeUnit_econ : public Unit
+{
+	int type = 3;
+private:
+	std::vector<Passenger*> econ;
+public:
+
+	int getWeight()
+	{
+		int total = 0;
+		total += rand() % 55 + 5;
+		return total;
+	}
+	void addUnit(Passenger* p) {
+		p->type = 3;
+		econ.push_back(p);
+	}
+	~CompositeUnit_econ()
+	{
+		for (int i = 0; i < econ.size(); ++i)
+			delete econ[i];
+	}
+};
+
+class CompositeUnit : public Unit
+{
+public:
+
+	int getWeight() {
+		int total = 0;
+		for (int i = 0; i < airplane.size(); ++i)
+			total += airplane[i]->getWeight();
+		return total;
+	}
+	int weight()
+	{
+		return rand() % 55 + 5;
+	}
+	void addUnit(Unit* p) {
+		airplane.push_back(p);
+	}
+	
+
+	int delete_Weight( int size, int total, int max)
+	{
+
+		for (int i = 0; i < size; i++)
+		{
+			if (total > max)
+			{
+				if (airplane[i].type == 3)
+				{
+					total = total - airplane[i].weight();
+				}
+			}
+			else return total;
+
+		}
+		if (total > max)
+		{
+			cout << "Багаж снят у всего класса эконом!";
+		}
+		return total;
+	}
+~CompositeUnit() {
+		for (int i = 0; i < airplane.size(); ++i)
+			delete airplane[i];
+	}
+private:
+	std::vector<Unit*> airplane;
+};
+
+
+
+int main()
+{
+	srand(time(0));
+	setlocale(LC_ALL, "Russian");
+
+	CompositeUnit* fly = new CompositeUnit;
+	int k1, k2, k3, maxWeight, totalWeight = 0;
+
+	totalWeight = 0;
+	int t = 0;
+	cout << "Введите количество пассажиров 1 класса (0-10): ";
+	cin >> k1;
+	CompositeUnit_one* one = new CompositeUnit_one;
+	cout << "Введите количество пассажиров бизнес класса (0-20): ";
+	cin >> k2;
+	CompositeUnit_buz* buz = new CompositeUnit_buz;
+	cout << "Введите количество пассажиров эконом класса (0-150): ";
+	cin >> k3;
+	CompositeUnit_econ* econ = new CompositeUnit_econ;
+
+
+	for (int i = 0; i < 2; i++)
+		fly->addUnit(new Pilot);
+	// 6 стюардесс
+	for (int i = 2; i < 8; i++)
+		fly->addUnit(new Stewardess);
+	// пассажиры
+	for (int i = 8; i < k1 + 8; i++)
+	{
+		fly[i].type = 1;
+		fly->addUnit(one);
+	}
+
+
+	for (int i = k1 + 8; i < k2 + 8 + k1; i++)
+	{
+		fly[i].type = 2;
+		fly->addUnit(buz);
+	}
+
+	for (int i = k2 + 8 + k1; i < k1 + k2 + k3 + 8; i++)
+	{
+		fly[i].type = 3;
+		fly->addUnit(econ);
+	}
+	cout << "Введите максимальный вес багажа: ";
+	cin >> maxWeight;
+
+	int size = k1 + k2 + k3 + 2 + 6;
+
+	totalWeight = fly->getWeight();
+	cout << "Вес багажа самолета: " << totalWeight << endl;
+	if (totalWeight > maxWeight)
+	{
+		cout << "Превышен допустимый размер багажа. Необходимо снять" << totalWeight - maxWeight << endl;
+
+		totalWeight = fly->delete_Weight( size, totalWeight, maxWeight);
+
+		cout << "Багаж снят. Текущий вес " << totalWeight;
+		cout << "Самолет готов к взлету!" << endl;
+	}
+	else cout << "Самолет готов к взлету!" << endl;
+	cout << "****************************" << endl;
+
+
+	return 0;
+}
